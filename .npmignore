@@ -1,0 +1,7 @@
+/demo
+/test
+/.travis.yml
+/get_minified_js.sh
+/.nojekyll
+.swo
+.swp

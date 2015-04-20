@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>tomlify-j0.4 demo</title>
+    <script src="eql.js"></script>
+    <script src="toml-browser.min.js"></script>
+    <script src="../dist/tomlify.min.js"></script>
+    <!--<script src="../tomlify.js"></script>-->
+    <style>
+      *, *:before, *:after {
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+      }
+      html, body {
+        padding: 0;
+        margin: 0;
+      }
+      body {
+        margin: 0;
+        padding-top: 8%;
+        width: 100%;
+        height: 100vh;
+        min-height: 300px;
+        font-family: sans-serif;
+        font-size: 18px;
+        background: rgba(183,222,237,1);
+        background: -moz-linear-gradient(left, rgba(183,222,237,1) 0%, rgba(113,206,239,1) 14%, rgba(33,180,226,1) 53%, rgba(183,222,237,1) 100%);
+        background: -webkit-gradient(left top, right top, color-stop(0%, rgba(183,222,237,1)), color-stop(14%, rgba(113,206,239,1)), color-stop(53%, rgba(33,180,226,1)), color-stop(100%, rgba(183,222,237,1)));
+        background: -webkit-linear-gradient(left, rgba(183,222,237,1) 0%, rgba(113,206,239,1) 14%, rgba(33,180,226,1) 53%, rgba(183,222,237,1) 100%);
+        background: -o-linear-gradient(left, rgba(183,222,237,1) 0%, rgba(113,206,239,1) 14%, rgba(33,180,226,1) 53%, rgba(183,222,237,1) 100%);
+        background: -ms-linear-gradient(left, rgba(183,222,237,1) 0%, rgba(113,206,239,1) 14%, rgba(33,180,226,1) 53%, rgba(183,222,237,1) 100%);
+        background: linear-gradient(to right, rgba(183,222,237,1) 0%, rgba(113,206,239,1) 14%, rgba(33,180,226,1) 53%, rgba(183,222,237,1) 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b7deed', endColorstr='#b7deed', GradientType=1 );
+      }
+      a {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+      .message-up, .message-down {
+        height: 2%;
+        text-align: center;
+        color: white;
+      }
+      .message-down {
+        display: none;
+        visibility: hidden;
+      }
+      .left, .right {
+        width: 49%;
+        height: 90%;
+      }
+      .left {
+        float: left;
+        padding-left: 2%;
+      }
+      .right {
+        float: right;
+        padding-right: 2%;
+      }
+      .header {
+        height: 10%;
+        padding: 0.5% 0 0.5% 0;
+        text-align: center;
+        font-family: "Helvetica", "Impact", sans-serif;
+        font-size: 1.5em;
+        font-weight: bolder;
+      }
+      .text {
+        position: relative;
+        height: 75%;
+      }
+      .label {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 0.2em;
+        border: 1px solid black;
+        width: 5em;
+        height: 1.5em;
+        font-size: smaller;
+        text-align: center;
+        color: green;
+        background: rgba(255, 255, 255, 0.5);
+      }
+      .label.error {
+        color: red;
+      }
+      textarea {
+        width: 100%;
+        height: 100%;
+        resize: none;
+        white-space: pre-wrap;
+        font-family: "Monaco", "Courier New", "Consolas", monospace;
+        font-size: 1em;
+        padding: 0.5em;
+        background: rgba(242,242,242,1);
+        background: -moz-linear-gradient(left, rgba(242,242,242,1) 0%, rgba(242,242,242,1) 41%, rgba(232,232,232,1) 79%, rgba(231,231,231,1) 81%, rgba(224,224,224,1) 100%);
+        background: -webkit-gradient(left top, right top, color-stop(0%, rgba(242,242,242,1)), color-stop(41%, rgba(242,242,242,1)), color-stop(79%, rgba(232,232,232,1)), color-stop(81%, rgba(231,231,231,1)), color-stop(100%, rgba(224,224,224,1)));
+        background: -webkit-linear-gradient(left, rgba(242,242,242,1) 0%, rgba(242,242,242,1) 41%, rgba(232,232,232,1) 79%, rgba(231,231,231,1) 81%, rgba(224,224,224,1) 100%);
+        background: -o-linear-gradient(left, rgba(242,242,242,1) 0%, rgba(242,242,242,1) 41%, rgba(232,232,232,1) 79%, rgba(231,231,231,1) 81%, rgba(224,224,224,1) 100%);
+        background: -ms-linear-gradient(left, rgba(242,242,242,1) 0%, rgba(242,242,242,1) 41%, rgba(232,232,232,1) 79%, rgba(231,231,231,1) 81%, rgba(224,224,224,1) 100%);
+        background: linear-gradient(to right, rgba(242,242,242,1) 0%, rgba(242,242,242,1) 41%, rgba(232,232,232,1) 79%, rgba(231,231,231,1) 81%, rgba(224,224,224,1) 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f2f2f2', endColorstr='#e0e0e0', GradientType=1 );
+      }
+      @media all and (max-width: 400px) {
+        body {
+          font-size: 12px;
+        }
+        .left, .right {
+          float: none;
+          width: 100%;
+          height: 45%;
+          padding: 0;
+        }
+        .message-up {
+          display: none;
+          visibility: hidden;
+        }
+        .message-down {
+          display: block;
+          visibility: visible;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="message-up">
+      This is a playground for <a href="https://github.com/toml-lang/toml">TOML</a>
+      and <a href="https://github.com/jakwings/tomlify-j0.4">tomlify-j0.4</a>!
+    </div>
+    <div class="left">
+      <div class="header">
+        TOML INPUT
+      </div>
+      <div class="text">
+        <textarea id="input" autofocus="true"># This is a TOML document. Boom.
+
+title = "TOML Example"
+
+[owner]
+name = "Tom Preston-Werner"
+organization = "GitHub"
+bio = "GitHub Cofounder & CEO\nLikes tater tots and beer."
+dob = 1979-05-27T07:32:00Z # First class dates? Why not?
+
+[database]
+server = "192.168.1.1"
+ports = [ 8001, 8001, 8002 ]
+connection_max = 5000
+enabled = true
+
+[servers]
+
+  # You can indent as you please. Tabs or spaces. TOML don't care.
+  [servers.alpha]
+  ip = "10.0.0.1"
+  dc = "eqdc10"
+
+  [servers.beta]
+  ip = "10.0.0.2"
+  dc = "eqdc10"
+  country = "中国" # This should be parsed as UTF-8
+
+[clients]
+data = [ ["gamma", "delta"], [1, 2] ] # just an update to make sure parsers support it
+
+# Line breaks are OK when inside arrays
+hosts = [
+  "alpha",
+  "omega"
+]
+
+# Products
+
+  [[products]]
+  name = "Hammer"
+  sku = 738594937
+
+  [[products]]
+  name = "Nail"
+  sku = 284758393
+  color = "gray"
+
+1-1 = "\u3007\U0001f600"  # Love Unicode?</textarea>
+      </div>
+    </div>
+    <div class="right">
+      <div class="header">
+        -<sup>parse</sup>-&gt; Object
+        -<sup>tomlify</sup>-&gt; TOML
+        -<sup>parse</sup>-&gt; JSON
+      </div>
+      <div class="text">
+        <div id="label" class="label">ERROR</div>
+        <textarea id="output"></textarea>
+      </div>
+    </div>
+    <div class="message-down">
+      This is a playground for <a href="https://github.com/toml-lang/toml">TOML</a>
+      and <a href="https://github.com/jakwings/tomlify-j0.4">tomlify-j0.4</a>.
+    </div>
+    <script>
+      var timerId = null;
+      var inputElm = document.getElementById('input');
+      var outputElm = document.getElementById('output');
+      var label = document.getElementById('label');
+      var setText = function (text, ok) {
+        clearTimeout(timerId);
+        timerId = setTimeout(function () {
+          outputElm.value = text;
+          outputElm.className = ok ? 'ok' : 'error';
+          label.textContent = ok ? 'OK' : 'ERROR';
+          label.className = 'label ' + (ok ? 'ok' : 'error');
+        }, 400);
+      };
+      var transform = function () {
+        var text, jsonText, tomlText;
+        try {
+          var data = toml.parse(inputElm.value);
+          jsonText = JSON.stringify(data, null, '  ');
+          //tomlText = tomlify(data, null, '  ');
+          tomlText = tomlify(data, function (key, value) {
+            var context = this;
+            if (typeof value === 'number' && Math.floor(value) === value &&
+                /^(?:database\.(?:ports\.|connection_max$)|products\.\[\d+\]\.sku$)/.test(tomlify.toKey(context.path))) {
+              return value.toFixed(0);
+            }
+            return false;
+          }, '  ');
+          text = JSON.stringify(toml.parse(tomlText), null, '  ');
+          setText(text, eql(JSON.parse(text), JSON.parse(jsonText)));
+          console.log('--[ TOML');
+          console.log(tomlText);
+          console.log(']-- TOML');
+        } catch (err) {
+          text = 'Line ' + err.line + ', column ' + err.column + ': ' + err;
+          setText(text, false);
+          console.log('--[ TOML');
+          console.log(tomlText);
+          console.log(']-- TOML');
+          console.error(err);
+          outputElm.className = 'error';
+        }
+      };
+      inputElm.addEventListener('input', transform, false);
+      inputElm.addEventListener('keydown', function () {
+        clearTimeout(timerId);
+        timerId = null;
+      }, false);
+      transform();
+    </script>
+  </body>
+</html>

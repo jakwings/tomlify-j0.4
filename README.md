@@ -1,0 +1,169 @@
+# TOMLify-j0.4
+
+[![Build Status](https://travis-ci.org/jakwings/tomlify-j0.4.svg)](https://travis-ci.org/jakwings/tomlify-j0.4)
+[![NPM version](https://badge.fury.io/js/tomlify-j0.4.svg)](http://badge.fury.io/js/tomlify-j0.4)
+
+As its name *TOMLify-j0.4* says, this is a [TOML] v[0.4.0] compliant encoder.
+(JavaScript Object -> TOML text)
+
+[TOML]: https://github.com/toml-lang/toml
+[0.4.0]: https://github.com/toml-lang/toml/blob/master/versions/en/toml-v0.4.0.md
+
+
+### Live Demo
+
+<http://jakwings.github.io/tomlify-j0.4/demo/>
+
+You can see the result from tomlify-j0.4 in the debug console of your browser.
+
+
+### Usage
+
+You can install it via `npm install tomlify-j0.4`, or just include the script
+`tomlify.js` or `dist/tomlify.min.js` in your web pages.
+
+```javascript
+var tomlify = require('tomlify-j0.4');
+
+var table = {
+    about: {
+        name: 'tomlify-j0.4',
+        maintainers: ['Jak Wings'],
+        todos: [
+            {
+                done: false,
+                priority: 'important',
+                text: 'Add some test scripts.'
+            },
+            {
+                done: true,
+                priority: 'normal',
+                text: 'Open source this project.'
+            }
+        ]
+    },
+    date: {
+        year: new Date('2015-01-01T00:08:00+08:00'),
+        months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    }
+};
+
+try {
+    var text = tomlify(table, null, 2);  // indent with 2 spaces
+    /* OUTPUT:
+     * [about]
+     * name = "tomlify-j0.4"
+     * maintainers = ["Jak Wings"]
+     * 
+     *   [[about.todos]]
+     *   done = false
+     *   priority = "important"
+     *   text = "Add some test scripts."
+     * 
+     *   [[about.todos]]
+     *   done = true
+     *   priority = "normal"
+     *   text = "Open source this project."
+     * 
+     * [date]
+     * year = 2014-12-31T16:08:00.000Z
+     * months = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
+     */
+    var text = tomlify(table, function (key, value) {
+        var context = this;
+        var path = tomlify.toKey(context.path);
+        if (/^date\.months\.\[\d+\]$/.test(path)) {
+            return value.toFixed(0);  // Change the text transformed from the value.
+        }
+        if (context.path[0] === 'about' &&
+            context.path[1] === 'todos' &&
+            context.path[2] === 1) {
+            return null;  // Drop one table from the todo array.
+        }
+        return false;  // Let tomlify decide for you.
+    }, '  ');
+    /* OUTPUT:
+     * [about]
+     * name = "tomlify-j0.4"
+     * maintainers = ["Jak Wings"]
+     * todos = [
+     *   {done = false, priority = "important", text = "Add some test scripts."}
+     * ]
+     * 
+     * [date]
+     * year = 2014-12-31T16:08:00.000Z
+     * months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+     */
+} catch (err) {
+    // do something
+}
+```
+
+
+### APIs
+
+#### tomlify(table, replacer, space)
+
+Use it to transform a table object into TOML text.
+
+*   table - `{Object}`: The object to be transformed.
+
+    It can be any JavaScript object, except for `null` and `undefined`. By
+    default, all numbers are transformed into floats and arrays of numbers will
+    become arrays of floats. You can change this behavior through `replacer`.
+
+    If `table` is a boolean value, a number, a string, a date or an array, the result will be the same as `tomlify.toValue(table, replacer, space)`.
+
+*   replacer - `{function(this: Context, key: String|Number, value:Mixed): Mixed}`:
+
+    *   `@this {Context}`:
+        *   `@property {Array.<String|Number>}` path: The key path to current value.
+        *   `@property {Table|Array}` table: The direct parent object.
+    *   `@param {String|Number}` key: The key of the value in current parent object.
+    *   `@param {Mixed}` value: The current value.
+    *   `@return {Mixed}` A string to change the value output, `false` to
+        cancel, `null` or `undefined` to remove the output.
+
+*   space - `{String|Number}`: Specify the padding string for indentation.
+
+    If it is a non-negative integer N, then use N space " " for indentation. If
+    it is a string, then use this string for indentation. Otherwise, no
+    indentation will be performed.
+
+#### tomlify.toValue(value, replacer, space)
+
+Just like `tomlify(table, replacer, space)`, it is used to transform a value
+into TOML value for a key-value pair. `value` cannot be null or undefined.
+
+E.g.
+
+```javascript
+tomlify.toValue({one: 1, two: 2});  //=> { one = 1.0, two = 2.0 }
+```
+
+#### tomlify.toKey(path, alternative)
+
+*   path - `{String|Array.<String|Number>}`: A key or a key path.
+*   alternative - `{Boolean}`: Whether numbers in the key path will be ignored.
+
+Use it to get a TOML key or key path for the key-value pair. E.g.
+
+```javascript
+tomlify.toKey(['sir', 'Mr. Smith']);  //=> sir."Mr.Smith"
+
+tomlify.toKey(['food', 0, 'price']);  //=> food.[0].price
+```
+
+
+### Known Problems
+
+*   JavaScript does not have integer type.
+
+    All numbers are floats in JavaScript. Any integer bigger than
+    Number.MAX_SAFE_INTEGER (9007199254740991 < 2^63 - 1) or smaller than
+    Number.MIN_SAFE_INTEGER (-9007199254740991 > -(2^63 - 1)) is not safe when
+    being converted or used as pure integer! You should store big integers in
+    strings.
+
+    All numbers are transformed into floats by default. You can change this
+    behavior by using a replacer function with tomlify-j0.4.
