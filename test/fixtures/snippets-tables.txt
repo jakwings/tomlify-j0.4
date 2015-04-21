@@ -1,6 +1,10 @@
 {}
 -----------------------------%
 -----------------------------------------------------------%
+this: null
+that: null
+-----------------------------%
+-----------------------------------------------------------%
 one: 1
 $wo: '2'
 -----------------------------%
@@ -53,6 +57,7 @@ database:
   ports: [ 8001, 8001, 8002 ]
   connection_max: 5000
   enabled: true
+  invisible: null
 
 servers:
   alpha:
@@ -76,7 +81,7 @@ products:
     comments:
       - 1-1: "〇\U0001f600"
         abc:
-          xyz: false
+          xyz: [ false, null ]
   - name: Wall
     sku: 284758373
     color: white
@@ -133,7 +138,7 @@ color = "gray"
   1-1 = "\u3007\U0001f600"  # Love Unicode?
 
     [products.comments.abc]
-    xyz = false
+    xyz = [false]
 
 [[products]]
 name = "Wall"

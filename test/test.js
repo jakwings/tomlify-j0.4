@@ -76,8 +76,9 @@ describe('tomlify.toValue(value, null, null)', function () {
   , [{},                      '{}']
   , [{one: 1, $wo: '2'},      '{one = 1.0, "$wo" = "2"}']
   , [[],                      '[]']
+  , [[null, undefined,,,],    '[]']
   , [[[], []],                '[[], []]']
-  , [[true, false],           '[true, false]']
+  , [[true, null, false],     '[true, false]']
   , [[1, 1.0],                '[1.0, 1.0]']
   , [[[true, false], [0, 0]], '[[true, false], [0.0, 0.0]]']
   ].forEach(function (data, i) {
@@ -94,15 +95,15 @@ describe('tomlify(value, null, space)', function () {
   var lineno = 0;
   var snippets = fs.readFileSync(__dirname + '/fixtures/snippets-values.txt', {
     encoding: 'utf8'
-  }).split('\n-----------------------------------------------------------%\n')
+  }).split(/\n-----------------------------------------------------------%\n?/)
     .forEach(function (s, i) {
-      var data = s.split('\n-----------------------------%\n');
+      var data = s.split(/\n-----------------------------%\n?/);
       if (data.length < 2) {
         return;
       }
       lineno += 1;
-      var YAMLlg = data[0].match(/^/mg).length;
-      var TOMLlg = data[1].match(/^/mg).length;
+      var YAMLlg = data[0] ? data[0].match(/^/mg).length : 0;
+      var TOMLlg = data[1] ? data[1].match(/^/mg).length : 0;
       var YAMLse = 'YAML[' + lineno + ':0-' + (lineno + YAMLlg) + ':0]';
       lineno += YAMLlg + 1;
       var TOMLse = 'TOML[' + lineno + ':0-' + (lineno + TOMLlg) + ':0]';
@@ -120,14 +121,14 @@ describe('tomlify(table, null, space)', function () {
   var lineno = 0;
   var snippets = fs.readFileSync(__dirname + '/fixtures/snippets-tables.txt', {
     encoding: 'utf8'
-  }).split('\n-----------------------------------------------------------%\n')
+  }).split(/\n-----------------------------------------------------------%\n?/)
     .forEach(function (s, i) {
-      var data = s.split('\n-----------------------------%\n');
+      var data = s.split(/\n-----------------------------%\n?/);
       if (data.length < 2) {
         return;
       }
-      var YAMLlg = data[0].match(/^/mg).length;
-      var TOMLlg = data[1].match(/^/mg).length;
+      var YAMLlg = data[0] ? data[0].match(/^/mg).length : 0;
+      var TOMLlg = data[1] ? data[1].match(/^/mg).length : 0;
       lineno += 1;
       var YAMLse = 'YAML[' + lineno + ':0-' + (lineno + YAMLlg) + ':0]';
       lineno += YAMLlg + 1;
@@ -155,20 +156,22 @@ describe('tomlify(table, replacer, space)', function () {
       return null;
     } else if ('products.[1].comments' === tomlify.toKey(context.path)) {
       return null;
+    } else if (value == null) {
+      return 'false';
     }
     return false;
   };
   var lineno = 0;
   var snippets = fs.readFileSync(__dirname + '/fixtures/snippets-replace.txt', {
     encoding: 'utf8'
-  }).split('\n-----------------------------------------------------------%\n')
+  }).split(/\n-----------------------------------------------------------%\n?/)
     .forEach(function (s, i) {
-      var data = s.split('\n-----------------------------%\n');
+      var data = s.split(/\n-----------------------------%\n?/);
       if (data.length < 2) {
         return;
       }
-      var YAMLlg = data[0].match(/^/mg).length;
-      var TOMLlg = data[1].match(/^/mg).length;
+      var YAMLlg = data[0] ? data[0].match(/^/mg).length : 0;
+      var TOMLlg = data[1] ? data[1].match(/^/mg).length : 0;
       lineno += 1;
       var YAMLse = 'YAML[' + lineno + ':0-' + (lineno + YAMLlg) + ':0]';
       lineno += YAMLlg + 1;

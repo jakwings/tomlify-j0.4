@@ -1,3 +1,12 @@
+{}
+-----------------------------%
+-----------------------------------------------------------%
+this: null
+that: null
+-----------------------------%
+this = false
+that = false
+-----------------------------------------------------------%
 one: 1
 $wo: '2'
 -----------------------------%
@@ -49,6 +58,7 @@ database:
   ports: [ 8000, 8001, 8002 ]
   connection_max: 5000
   enabled: true
+  invisible: null
 
 servers:
   alpha:
@@ -92,6 +102,7 @@ server = "192.168.1.1"
 ports = [ 16000, 16002, 16004 ]
 connection_max = 10000
 enabled = true
+invisible = false
 
 [servers]
 
