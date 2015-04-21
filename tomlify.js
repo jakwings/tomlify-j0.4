@@ -164,14 +164,12 @@
     context.table = obj;
     var lines = [];
     for (var i = 0, l = obj.length; i < l; i++) {
-      if (obj[i] != null) {
-        context.path.push(i);
-        var valueText = escapeValue_(context, i, obj[i]);
-        if (isString(valueText)) {
-          lines.push(valueText);
-        }
-        context.path.pop();
+      context.path.push(i);
+      var valueText = escapeValue_(context, i, obj[i]);
+      if (isString(valueText)) {
+        lines.push(valueText);
       }
+      context.path.pop();
     }
     context.table = table;
     if (lines.length > 0 && context.space &&
@@ -232,6 +230,9 @@
       case typeOf.Date:
         return escapeDate(context, key, obj);
       default:
+        if (obj == null) {
+          return null;
+        }
         return escapeInlineTable(context, key, obj);
     }
   };
@@ -269,30 +270,38 @@
   };
 
   var wrapContext = function (context) {
-    var table = {};
-    for (var k in context.table) {
-      table[k] = context.table[k];
-    }
     return {
       path: context.path.slice(0),
-      table: table,
+      table: context.table
     };
   };
 
   var getReplacement = function (context, key, obj) {
-    var valueText = context.replace.call(wrapContext(context), key, obj);
-    if (isString(valueText)) {
-      return escapeKey(key) + ' = ' + valueText;
-    } else if (valueText == null) {
-      return null;
-    } else if (valueText !== false) {
-      throw new Error(genErrMsg(context.path,
-            'Replacer must return a string, false, null or undefined.'));
+    if (context.replace) {
+      var valueText = context.replace.call(wrapContext(context), key, obj);
+      if (isString(valueText)) {
+        return escapeKey(key) + ' = ' + valueText;
+      } else if (valueText == null) {
+        return null;
+      } else if (valueText !== false) {
+        throw new Error(genErrMsg(context.path,
+              'Replacer must return a string, false, null or undefined.'));
+      }
     }
     return false;
   };
 
   var traverse = function (context, key, obj, callback) {
+    var line;
+    if (context.replace && context.path.length === 0) {
+      line = getReplacement(context, key, obj);
+      if (isString(line)) {
+        context.lines.push(line);
+      }
+      if (line !== false) {
+        return;
+      }
+    }
     if (callback(context, key, obj)) {
       return;
     }
@@ -331,7 +340,7 @@
       if (context.replace) {
         for (var i = 0, l = tables.length; i < l; i += 3) {
           context.path.push(tables[i]);
-          var line = getReplacement(context, tables[i], tables[i+1]);
+          line = getReplacement(context, tables[i], tables[i+1]);
           if (isString(line)) {
             context.lines.push(indent(line, context.level, context.space));
             tables[i+1] = null;
@@ -342,7 +351,7 @@
         }
         for (var i = 0, l = tableArrays.length; i < l; i += 3) {
           context.path.push(tableArrays[i]);
-          var line = getReplacement(context, tableArrays[i], tableArrays[i+1]);
+          line = getReplacement(context, tableArrays[i], tableArrays[i+1]);
           if (isString(line)) {
             line = escapeKey(tableArrays[i]) + ' = ' + line;
             context.lines.push(indent(line, context.level, context.space));
@@ -354,7 +363,7 @@
           for (var j = 0, k = tableArrays[i+1].length; j < k; j++) {
             context.path.push(j);
             var subTable = tableArrays[i+1][j];
-            var line = getReplacement(context, i, subTable);
+            line = getReplacement(context, i, subTable);
             context.path.pop();
             if (line !== false) {
               line = escapeKeyValue(context, tableArrays[i], tableArrays[i+1]);
