@@ -16,6 +16,10 @@ As its name *TOMLify-j0.4* says, this is a [TOML] v[0.4.0] compliant encoder.
 
 You can see the result from tomlify-j0.4 in the debug console of your browser.
 
+The parser used in the demo is [toml-j0.4]
+
+[toml-j0.4]: https://github.com/jakwings/toml-j0.4
+
 
 ### Usage
 
@@ -44,7 +48,7 @@ var table = {
     },
     date: {
         year: new Date('2015-01-01T00:08:00+08:00'),
-        months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     }
 };
 
@@ -94,6 +98,14 @@ try {
      * year = 2014-12-31T16:08:00.000Z
      * months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
      */
+    var text = tomlify({
+        null: null,
+        undefined: undefined,
+        numbers: [1, 2, null, , 3, 4]
+    });
+    /* OUTPUT:
+     * numbers = [1.0, 2.0, 3.0, 4.0]
+     */
 } catch (err) {
     // do something
 }
@@ -110,9 +122,12 @@ Use it to transform a table object into TOML text.
 
     It can be any JavaScript object, except for `null` and `undefined`. By
     default, all numbers are transformed into floats and arrays of numbers will
-    become arrays of floats. You can change this behavior through `replacer`.
+    become arrays of floats. And `null` or `undefined` in an array or object
+    property whose value is `null` or `undefined` will be ignored. You can
+    change this behavior through `replacer`.
 
-    If `table` is a boolean value, a number, a string, a date or an array, the result will be the same as `tomlify.toValue(table, replacer, space)`.
+    If `table` is a boolean value, a number, a string, a date or an array, the
+    result will be the same as `tomlify.toValue(table, replacer, space)`.
 
 *   replacer - `{function(this: Context, key: String|Number, value:Mixed): Mixed}`:
 
@@ -138,7 +153,7 @@ into TOML value for a key-value pair. `value` cannot be null or undefined.
 E.g.
 
 ```javascript
-tomlify.toValue({one: 1, two: 2});  //=> { one = 1.0, two = 2.0 }
+tomlify.toValue({one: 1, two: 2});  //=> {one = 1.0, two = 2.0}
 ```
 
 #### tomlify.toKey(path, alternative)
@@ -149,20 +164,22 @@ tomlify.toValue({one: 1, two: 2});  //=> { one = 1.0, two = 2.0 }
 Use it to get a TOML key or key path for the key-value pair. E.g.
 
 ```javascript
-tomlify.toKey(['sir', 'Mr. Smith']);  //=> sir."Mr.Smith"
+tomlify.toKey(['sir', 'Mr. Smith']);  //=> sir."Mr. Smith"
 
 tomlify.toKey(['food', 0, 'price']);  //=> food.[0].price
+
+tomlify.toKey(['food', 0, 'price'], true);  //=> food.price
 ```
 
 
 ### Known Problems
 
-*   JavaScript does not have integer type.
+*   JavaScript does not have any integer type.
 
     All numbers are floats in JavaScript. Any integer bigger than
     Number.MAX_SAFE_INTEGER (9007199254740991 < 2^63 - 1) or smaller than
     Number.MIN_SAFE_INTEGER (-9007199254740991 > -(2^63 - 1)) is not safe when
-    being converted or used as pure integer! You should store big integers in
+    being converted or used as a pure integer! You should store big integers in
     strings.
 
     All numbers are transformed into floats by default. You can change this
