@@ -415,7 +415,7 @@
 
   var indent = function (str, level, space) {
     var padding = repeatString(space, level);
-    return str.replace(/^/mg, padding);
+    return str.replace(/^(?!$)/mg, padding);
   };
 
   var toSpace = function (space) {
