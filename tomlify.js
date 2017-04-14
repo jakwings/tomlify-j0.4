@@ -363,9 +363,12 @@
           for (var j = 0, k = tableArrays[i+1].length; j < k; j++) {
             context.path.push(j);
             var subTable = tableArrays[i+1][j];
-            line = getReplacement(context, i, subTable);
+            line = getReplacement(context, j, subTable);
             context.path.pop();
-            if (line !== false) {
+            if (line == null) {
+              tableArrays[i+1][j] = null;
+              continue;
+            } else if (line !== false) {
               line = escapeKeyValue(context, tableArrays[i], tableArrays[i+1]);
               if (isString(line)) {
                 context.lines.push(indent(line, context.level, context.space));

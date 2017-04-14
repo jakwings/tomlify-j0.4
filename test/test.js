@@ -156,6 +156,10 @@ describe('tomlify(table, replacer, space)', function () {
       return null;
     } else if ('products.[1].comments' === tomlify.toKey(context.path)) {
       return null;
+    } else if ('todos.[0]' === tomlify.toKey(context.path)) {
+      return null;
+    } else if (/^todosx\.\[\d\]$/.test(tomlify.toKey(context.path))) {
+      return '"done"';
     } else if (value == null) {
       return 'false';
     }
