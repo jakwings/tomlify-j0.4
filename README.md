@@ -12,7 +12,7 @@ As its name *TOMLify-j0.4* says, this is a [TOML] v[0.4.0] compliant encoder.
 
 ### Live Demo
 
-<http://jakwings.github.io/tomlify-j0.4/demo/>
+<https://jakwings.github.io/tomlify-j0.4/demo/>
 
 You can see the result from tomlify-j0.4 in the debug console of your browser.
 
@@ -58,17 +58,17 @@ try {
      * [about]
      * name = "tomlify-j0.4"
      * maintainers = ["Jak Wings"]
-     * 
+     *
      *   [[about.todos]]
      *   done = false
      *   priority = "important"
      *   text = "Add some test scripts."
-     * 
+     *
      *   [[about.todos]]
      *   done = true
      *   priority = "normal"
      *   text = "Open source this project."
-     * 
+     *
      * [date]
      * year = 2014-12-31T16:08:00.000Z
      * months = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
@@ -90,10 +90,12 @@ try {
      * [about]
      * name = "tomlify-j0.4"
      * maintainers = ["Jak Wings"]
-     * todos = [
-     *   {done = false, priority = "important", text = "Add some test scripts."}
-     * ]
-     * 
+     *
+     *   [[about.todos]]
+     *   done = false
+     *   priority = "important"
+     *   text = "Add some test scripts."
+     *
      * [date]
      * year = 2014-12-31T16:08:00.000Z
      * months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
@@ -164,10 +166,11 @@ tomlify.toValue({one: 1, two: 2});  //=> {one = 1.0, two = 2.0}
 Use it to get a TOML key or key path for the key-value pair. E.g.
 
 ```javascript
-tomlify.toKey(['sir', 'Mr. Smith']);  //=> sir."Mr. Smith"
+tomlify.toKey('money');  //=> money
+tomlify.toKey('$');      //=> "$"
 
-tomlify.toKey(['food', 0, 'price']);  //=> food.[0].price
-
+tomlify.toKey(['sir', 'Mr. Smith']);        //=> sir."Mr. Smith"
+tomlify.toKey(['food', 0, 'price']);        //=> food.[0].price
 tomlify.toKey(['food', 0, 'price'], true);  //=> food.price
 ```
 

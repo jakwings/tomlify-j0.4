@@ -222,15 +222,7 @@ hosts = [
         try {
           var data = toml.parse(inputElm.value);
           jsonText = JSON.stringify(data, null, '  ');
-          //tomlText = tomlify(data, null, '  ');
-          tomlText = tomlify(data, function (key, value) {
-            var context = this;
-            if (typeof value === 'number' && Math.floor(value) === value &&
-                /^(?:database\.(?:ports\.|connection_max$)|products\.\[\d+\]\.sku$)/.test(tomlify.toKey(context.path))) {
-              return value.toFixed(0);
-            }
-            return false;
-          }, '  ');
+          tomlText = tomlify(data, null, '  ');
           text = JSON.stringify(toml.parse(tomlText), null, '  ');
           setText(text, eql(JSON.parse(text), JSON.parse(jsonText)));
           console.log('--[ TOML');

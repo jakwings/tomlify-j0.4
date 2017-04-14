@@ -1,7 +1,7 @@
 {
   "name": "tomlify-j0.4",
   "version": "1.0.1",
-  "description": "A Object->TOML encoder/converter for TOML v0.4.0",
+  "description": "A Object->TOML encoder/converter only for TOML v0.4.0",
   "main": "tomlify.js",
   "scripts": {
     "test": "node node_modules/mocha/bin/mocha --bail --reporter min --inline-diffs test/*.js"
