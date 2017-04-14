@@ -163,6 +163,10 @@
     var table = context.table;
     context.table = obj;
     var lines = [];
+    var inPair = context.inPair;
+    if (containTables(obj)) {
+      context.inPair = true;
+    }
     for (var i = 0, l = obj.length; i < l; i++) {
       context.path.push(i);
       var valueText = escapeValue_(context, i, obj[i]);
@@ -171,9 +175,9 @@
       }
       context.path.pop();
     }
+    context.inPair = inPair;
     context.table = table;
-    if (lines.length > 0 && context.space &&
-        (containArrays(obj) || containTables(obj))) {
+    if (!context.inPair && lines.length > 0 && context.space) {
       return '[\n' + indent(lines.join(',\n'), 1, context.space) + '\n]';
     }
     return '[' + lines.join(', ') + ']';
@@ -187,6 +191,8 @@
   var escapeInlineTable = function (context, key, obj) {
     var table = context.table;
     context.table = obj;
+    var inPair = context.inPair;
+    context.inPair = true;
     var lines = [];
     for (var k in obj) {
       if (hasOwnProperty(obj, k) && obj[k] != null) {
@@ -202,6 +208,7 @@
         context.path.pop();
       }
     }
+    context.inPair = inPair;
     context.table = table;
     return '{' + lines.join(', ') + '}';
   };
@@ -490,6 +497,7 @@
     traverse({
       path: [],
       table: {'': table},
+      inPair: false,
       inTableArray: false,
       replace: replace,
       level: 0,
