@@ -217,10 +217,11 @@ hosts = [
           label.className = 'label ' + (ok ? 'ok' : 'error');
         }, 400);
       };
+      var data;
       var transform = function () {
         var text, jsonText, tomlText;
         try {
-          var data = toml.parse(inputElm.value);
+          data = toml.parse(inputElm.value);
           jsonText = JSON.stringify(data, null, '  ');
           tomlText = tomlify(data, null, '  ');
           text = JSON.stringify(toml.parse(tomlText), null, '  ');

@@ -46,9 +46,9 @@ var table = {
             }
         ]
     },
-    date: {
-        year: new Date('2015-01-01T00:08:00+08:00'),
-        months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    more: {
+        version: [2, 0, 0],
+        date: new Date('2017-04-14T00:08:00+08:00')
     }
 };
 
@@ -57,7 +57,9 @@ try {
     /* OUTPUT:
      * [about]
      * name = "tomlify-j0.4"
-     * maintainers = ["Jak Wings"]
+     * maintainers = [
+     *   "Jak Wings"
+     * ]
      *
      *   [[about.todos]]
      *   done = false
@@ -69,14 +71,18 @@ try {
      *   priority = "normal"
      *   text = "Open source this project."
      *
-     * [date]
-     * year = 2014-12-31T16:08:00.000Z
-     * months = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
+     * [more]
+     * version = [
+     *   2.0,
+     *   0.0,
+     *   0.0
+     * ]
+     * date = 2017-04-13T16:08:00.000Z
      */
     var text = tomlify(table, function (key, value) {
         var context = this;
         var path = tomlify.toKey(context.path);
-        if (/^date\.months\.\[\d+\]$/.test(path)) {
+        if (/^more\.version\.\[\d+\]$/.test(path)) {
             return value.toFixed(0);  // Change the text transformed from the value.
         }
         if (context.path[0] === 'about' &&
@@ -89,16 +95,22 @@ try {
     /* OUTPUT:
      * [about]
      * name = "tomlify-j0.4"
-     * maintainers = ["Jak Wings"]
+     * maintainers = [
+     *   "Jak Wings"
+     * ]
      *
      *   [[about.todos]]
      *   done = false
      *   priority = "important"
      *   text = "Add some test scripts."
      *
-     * [date]
-     * year = 2014-12-31T16:08:00.000Z
-     * months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+     * [more]
+     * version = [
+     *   2,
+     *   0,
+     *   0
+     * ]
+     * date = 2017-04-13T16:08:00.000Z
      */
     var text = tomlify({
         null: null,
@@ -152,10 +164,30 @@ Use it to transform a table object into TOML text.
 Just like `tomlify(table, replacer, space)`, it is used to transform a value
 into TOML value for a key-value pair. `value` cannot be null or undefined.
 
+However, an inline-table always fits into one line, no matter what it contains.
+
 E.g.
 
 ```javascript
-tomlify.toValue({one: 1, two: 2});  //=> {one = 1.0, two = 2.0}
+tomlify.toValue({one: 1, two: 2});
+//=> {one = 1.0, two = 2.0}
+
+tomlify.toValue(["apple", "banana"], null, 2);
+//=>
+//[
+//  "apple",
+//  "banana"
+//]"
+
+tomlify.toValue([
+  {people: ["Alice", "Bob"]},
+  {fruits: ["apple", "banana"]}
+], null, 2);
+//=>
+//[
+//  {people = ["Alice", "Bob"]},
+//  {fruits = ["apple", "banana"]}
+//]
 ```
 
 #### tomlify.toKey(path, alternative)
