@@ -1,10 +1,10 @@
 {
   "name": "tomlify-j0.4",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A Object->TOML encoder/converter only for TOML v0.4.0",
   "main": "tomlify.js",
   "scripts": {
-    "test": "node node_modules/mocha/bin/mocha --bail --reporter min --inline-diffs test/*.js"
+    "test": "mocha --bail --reporter min test/*.js"
   },
   "keywords": [
     "toml",
@@ -15,16 +15,11 @@
     "toml-j0.4"
   ],
   "author": "Jak Wings <jakwings@gmail.com>",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git@github.com:jakwings/tomlify-j0.4.git"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/jakwings/tomlify-j0.4/blob/master/LICENSE"
-    }
-  ],
   "bugs": {
     "url": "https://github.com/jakwings/tomlify-j0.4/issues"
   },
