@@ -160,6 +160,8 @@ describe('tomlify(table, replacer, space)', function () {
       return null;
     } else if (/^todosx\.\[\d\]$/.test(tomlify.toKey(context.path))) {
       return '"done"';
+    } else if (/^todosy$/.test(tomlify.toKey(context.path))) {
+      return tomlify.toValue(value, null, 2);
     } else if (value == null) {
       return 'false';
     }

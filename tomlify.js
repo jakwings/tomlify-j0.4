@@ -348,10 +348,10 @@
         for (var i = 0, l = tables.length; i < l; i += 3) {
           context.path.push(tables[i]);
           line = getReplacement(context, tables[i], tables[i+1]);
-          if (isString(line)) {
-            context.lines.push(indent(line, context.level, context.space));
-            tables[i+1] = null;
-          } else if (line == null) {
+          if (line !== false) {
+            if (isString(line)) {
+              context.lines.push(indent(line, context.level, context.space));
+            }
             tables[i+1] = null;
           }
           context.path.pop();
@@ -359,10 +359,10 @@
         for (var i = 0, l = tableArrays.length; i < l; i += 3) {
           context.path.push(tableArrays[i]);
           line = getReplacement(context, tableArrays[i], tableArrays[i+1]);
-          if (isString(line)) {
-            line = escapeKey(tableArrays[i]) + ' = ' + line;
-            context.lines.push(indent(line, context.level, context.space));
-          } else if (line == null) {
+          if (line !== false) {
+            if (isString(line)) {
+              context.lines.push(indent(line, context.level, context.space));
+            }
             tableArrays[i+1] = null;
             context.path.pop();
             continue;
@@ -372,10 +372,11 @@
             var subTable = tableArrays[i+1][j];
             line = getReplacement(context, j, subTable);
             context.path.pop();
-            if (line == null) {
-              tableArrays[i+1][j] = null;
-              continue;
-            } else if (line !== false) {
+            if (line !== false) {
+              if (line == null) {
+                tableArrays[i+1][j] = null;
+                continue;
+              }
               line = escapeKeyValue(context, tableArrays[i], tableArrays[i+1]);
               if (isString(line)) {
                 context.lines.push(indent(line, context.level, context.space));
