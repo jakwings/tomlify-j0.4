@@ -1,6 +1,6 @@
 {
   "name": "tomlify-j0.4",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A Object->TOML encoder/converter only for TOML v0.4.0",
   "main": "tomlify.js",
   "scripts": {
