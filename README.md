@@ -177,7 +177,7 @@ tomlify.toValue(["apple", "banana"], null, 2);
 //[
 //  "apple",
 //  "banana"
-//]"
+//]
 
 tomlify.toValue([
   {people: ["Alice", "Bob"]},
