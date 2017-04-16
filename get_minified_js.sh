@@ -11,7 +11,7 @@ OUTPUT=dist/tomlify.min.js
 #    -d "language=ECMASCRIPT5_STRICT" \
 #    --data-urlencode "js_code@$INPUT" \
 #    -o "$OUTPUT"
-#sed -i "1s/^\('use strict';\)\([^{]*\){/;\2{\1/" "$OUTPUT"
+#sed -E -i "1s/^('use strict';)?([^{]*)\\{/;\2{'use strict';/" "$OUTPUT"
 
 curl -s "$API" \
     -d "compilation_level=ADVANCED_OPTIMIZATIONS" \
@@ -21,4 +21,4 @@ curl -s "$API" \
     -d "language=ECMASCRIPT5_STRICT" \
     --data-urlencode "js_code@$INPUT" \
     -o "$OUTPUT"
-sed -i "1s/^\('use strict';\)\([^{]*\){/;\2{\1/" "$OUTPUT"
+sed -E -i "1s/^('use strict';)?([^{]*)\\{/;\2{'use strict';/" "$OUTPUT"
