@@ -159,6 +159,11 @@ Use it to transform a table object into TOML text.
     it is a string, then use this string for indentation. Otherwise, no
     indentation will be performed.
 
+#### tomlify.toToml(value, replacer, space)
+
+The same as `tomlify(table, replacer, space)`, except that `value` must be an
+object other than an instance of Array or Date.
+
 #### tomlify.toValue(value, replacer, space)
 
 Just like `tomlify(table, replacer, space)`, it is used to transform a value
