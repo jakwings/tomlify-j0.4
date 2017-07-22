@@ -223,7 +223,7 @@ hosts = [
         try {
           data = toml.parse(inputElm.value);
           jsonText = JSON.stringify(data, null, '  ');
-          tomlText = tomlify(data, null, '  ');
+          tomlText = tomlify.toToml(data, null, '  ');
           text = JSON.stringify(toml.parse(tomlText), null, '  ');
           setText(text, eql(JSON.parse(text), JSON.parse(jsonText)));
           console.log('--[ TOML');
