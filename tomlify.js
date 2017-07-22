@@ -244,9 +244,7 @@
     }
   };
   var escapeValue = function (obj, replace, space) {
-    if (obj == null) {
-      throw new Error('Undefined or null cannot be stringified.');
-    }
+    check(obj);
     return escapeValue_({
       path: [],
       table: {'': obj},
@@ -447,13 +445,17 @@
     return null;
   };
 
-  var escapeTable = function (table, replace, space) {
-    if (table == null) {
+  var check = function (obj) {
+    if (obj == null) {
       throw new Error('Undefined or null cannot be stringified.');
     }
-    if (isCircular(table)) {
+    if (isCircular(obj)) {
       throw new Error('Converting circular structure to TOML.');
     }
+  };
+
+  var escapeTable = function (table, replace, space) {
+    check(table);
     replace = toReplacer(replace);
     space = toSpace(space);
     var lines = [];
