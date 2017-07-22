@@ -1,3 +1,8 @@
+### v2.1.1
+
+* New API `tomlify.toToml()`.
+* Check for circular data structure in `tomlify.toValue()`.
+
 ### v2.0.0
 
 Breaking change:
