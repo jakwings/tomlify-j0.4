@@ -447,7 +447,7 @@
     return null;
   };
 
-  var tomlify = function (table, replace, space) {
+  var escapeTable = function (table, replace, space) {
     if (table == null) {
       throw new Error('Undefined or null cannot be stringified.');
     }
@@ -456,9 +456,6 @@
     }
     replace = toReplacer(replace);
     space = toSpace(space);
-    if (!isTable(table)) {
-      return escapeValue(table, replace, space);
-    }
     var lines = [];
     var callback = function (context, key, obj) {
       var line = null;
@@ -506,6 +503,20 @@
       lines: lines  // So special...
     }, '', table, callback);
     return lines.join('\n');
+  };
+
+  var tomlify = function (table, replace, space) {
+    if (!isTable(table)) {
+      return escapeValue(table, replace, space);
+    }
+    return escapeTable(table, replace, space);
+  };
+
+  tomlify.toToml = function (table, replace, space) {
+    if (!isTable(table)) {
+      throw new Error('An object other than Array or Date is expected.');
+    }
+    return escapeTable(table, replace, space);
   };
 
   tomlify.toKey = function (path, alt) {
