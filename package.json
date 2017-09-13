@@ -1,9 +1,8 @@
 {
   "name": "tomlify-j0.4",
-  "version": "2.2.1",
+  "version": "3.0.0-alpha.0",
   "description": "A Object->TOML encoder/converter only for TOML v0.4.0",
   "main": "tomlify.js",
-  "types": "tomlify.d.ts",
   "scripts": {
     "dist": "uglifyjs --verbose --compress --mangle -o dist/tomlify.min.js tomlify.js",
     "prepare": "npm run dist",
@@ -14,7 +13,6 @@
     "README.md",
     "CHANGELOG.md",
     "dist/tomlify.min.js",
-    "tomlify.d.ts",
     "tomlify.js"
   ],
   "keywords": [
