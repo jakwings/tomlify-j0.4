@@ -194,7 +194,12 @@
     var inPair = context.inPair;
     context.inPair = true;
     var lines = [];
-    for (var k in obj) {
+    var keys = Object.keys(obj);
+    if (context.sort) {
+      keys.sort(context.sort);
+    }
+    for (var i = 0, l = keys.length; i < l; i++) {
+      var k = keys[i];
       if (hasOwnProperty(obj, k) && obj[k] != null) {
         if (!k) {
           throw new Error(
@@ -243,15 +248,16 @@
         return escapeInlineTable(context, key, obj);
     }
   };
-  var escapeValue = function (obj, replace, space) {
-    check(obj);
+  var escapeValue = function (obj, opts) {
     return escapeValue_({
       path: [],
       table: {'': obj},
+      inPair: false,
       inTableArray: false,
-      replace: toReplacer(replace),
+      sort: opts.sort,
+      replace: opts.replace,
       level: 0,
-      space: toSpace(space)
+      space: toSpace(opts.space)
     }, '', obj);
   };
 
@@ -325,16 +331,20 @@
       var inTableArray = context.inTableArray;
       context.inTableArray = false;
       var tables = [];
-      var tableArrays = [];
-      for (var k in obj) {
+      var keys = Object.keys(obj);
+      if (context.sort) {
+        keys.sort(context.sort);
+      }
+      for (var i = 0, l = keys.length; i < l; i++) {
+        var k = keys[i];
         if (hasOwnProperty(obj, k)) {
           var v = obj[k];
           var toIndent = context.path.length > 0 &&
               (isArray(v) ? containTables(v) : isTable(v));
           if (isArray(v) && containTables(v)) {
-            tableArrays.push(k, v, toIndent);
+            tables.push([true, k, v, toIndent]);
           } else if (isTable(v)) {
-            tables.push(k, v, toIndent);
+            tables.push([false, k, v, toIndent]);
           } else {
             context.path.push(k);
             traverse(context, k, v, callback);
@@ -342,61 +352,65 @@
           }
         }
       }
+      keys = null;
       if (context.replace) {
-        for (var i = 0, l = tables.length; i < l; i += 3) {
-          context.path.push(tables[i]);
-          line = getReplacement(context, tables[i], tables[i+1]);
-          if (line !== false) {
-            if (isString(line)) {
-              context.lines.push(indent(line, context.level, context.space));
-            }
-            tables[i+1] = null;
-          }
-          context.path.pop();
-        }
-        for (var i = 0, l = tableArrays.length; i < l; i += 3) {
-          context.path.push(tableArrays[i]);
-          line = getReplacement(context, tableArrays[i], tableArrays[i+1]);
-          if (line !== false) {
-            if (isString(line)) {
-              context.lines.push(indent(line, context.level, context.space));
-            }
-            tableArrays[i+1] = null;
-            context.path.pop();
-            continue;
-          }
-          for (var j = 0, k = tableArrays[i+1].length; j < k; j++) {
-            context.path.push(j);
-            var subTable = tableArrays[i+1][j];
-            line = getReplacement(context, j, subTable);
-            context.path.pop();
+        for (var i = 0, l = tables.length; i < l; i ++) {
+          var table = tables[i];
+          if (!table[0]) {
+            context.path.push(table[1]);
+            line = getReplacement(context, table[1], table[2]);
             if (line !== false) {
-              if (line == null) {
-                tableArrays[i+1][j] = null;
-                continue;
-              }
-              line = escapeKeyValue(context, tableArrays[i], tableArrays[i+1]);
               if (isString(line)) {
                 context.lines.push(indent(line, context.level, context.space));
               }
-              tableArrays[i+1] = null;
-              break;
+              table[2] = null;
             }
+            context.path.pop();
+          } else {
+            context.path.push(table[1]);
+            line = getReplacement(context, table[1], table[2]);
+            if (line !== false) {
+              if (isString(line)) {
+                context.lines.push(indent(line, context.level, context.space));
+              }
+              table[2] = null;
+              context.path.pop();
+              continue;
+            }
+            var subTables = table[2];
+            for (var j = 0, k = subTables.length; j < k; j++) {
+              var subTable = subTables[j];
+              context.path.push(j);
+              line = getReplacement(context, j, subTable);
+              context.path.pop();
+              if (line !== false) {
+                if (line == null) {
+                  subTables[j] = null;
+                  continue;
+                }
+                line = escapeKeyValue(context, table[1], table[2]);
+                if (isString(line)) {
+                  context.lines.push(indent(line, context.level, context.space));
+                }
+                table[2] = null;
+                break;
+              }
+            }
+            context.path.pop();
           }
-          context.path.pop();
         }
       }
-      var objects = tables.concat(tableArrays);
-      for (var i = 0, l = objects.length; i < l; i += 3) {
-        if (objects[i+1] == null) {
+      for (var i = 0, l = tables.length; i < l; i++) {
+        var table = tables[i];
+        if (table[2] == null) {
           continue;
         }
-        context.path.push(objects[i]);
-        if (objects[i+2]) {
+        context.path.push(table[1]);
+        if (table[3]) {
           context.level++;
         }
-        traverse(context, objects[i], objects[i+1], callback);
-        if (objects[i+2]) {
+        traverse(context, table[1], table[2], callback);
+        if (table[3]) {
           context.level--;
         }
         context.path.pop();
@@ -437,27 +451,27 @@
     return '';
   };
 
-  var toReplacer = function (replace) {
-    if (typeof replace === 'function') {
-      // @type {function(this: Context, key: String|Number, value: Mixed): Mixed}
-      return replace;
-    }
-    return null;
-  };
-
-  var check = function (obj) {
+  var check = function (obj, opts) {
     if (obj == null) {
       throw new Error('Undefined or null cannot be stringified.');
     }
     if (isCircular(obj)) {
       throw new Error('Converting circular structure to TOML.');
     }
+    if (opts != null && typeof opts !== 'object') {
+      throw new Error('Options must be an object.');
+    }
+    // @type {function(this: Context, key: String|Number, value: Mixed): Mixed}
+    if (opts.replace != null && typeof opts.replace !== 'function') {
+      throw new Error('Replacer must be a function.');
+    }
+    // @type {function(a: String, b: String): Number}
+    if (opts.sort != null && typeof opts.sort !== 'function') {
+      throw new Error('Compare function for sorting must be a function.');
+    }
   };
 
-  var escapeTable = function (table, replace, space) {
-    check(table);
-    replace = toReplacer(replace);
-    space = toSpace(space);
+  var escapeTable = function (table, opts) {
     var lines = [];
     var callback = function (context, key, obj) {
       var line = null;
@@ -499,26 +513,24 @@
       table: {'': table},
       inPair: false,
       inTableArray: false,
-      replace: replace,
+      replace: opts.replace,
+      sort: opts.sort,
       level: 0,
-      space: space,
+      space: toSpace(opts.space),
       lines: lines  // So special...
     }, '', table, callback);
     return lines.join('\n');
   };
 
-  var tomlify = function (table, replace, space) {
-    if (!isTable(table)) {
-      return escapeValue(table, replace, space);
-    }
-    return escapeTable(table, replace, space);
-  };
+  var tomlify = {};
 
-  tomlify.toToml = function (table, replace, space) {
+  tomlify.toToml = function (table, opts) {
     if (!isTable(table)) {
       throw new Error('An object other than Array or Date is expected.');
     }
-    return escapeTable(table, replace, space);
+    opts = opts != null ? opts : {};
+    check(table, opts);
+    return escapeTable(table, opts);
   };
 
   tomlify.toKey = function (path, alt) {
@@ -538,8 +550,11 @@
     throw new Error('Invalid Arguments for tomlify.toKey({String | Array})');
   };
 
-  tomlify.toValue = escapeValue;
-
+  tomlify.toValue = function (obj, opts) {
+    opts = opts != null ? opts : {};
+    check(obj, opts);
+    return escapeValue(obj, opts);
+  };
 
   if ((typeof module !== 'undefined' && module !== null ? module.exports : void 0) != null) {
     module.exports = tomlify;
