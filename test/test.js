@@ -52,7 +52,7 @@ describe('tomlify.toKey(key, alternative)', function () {
 });
 
 
-describe('tomlify.toValue(value, null, null)', function () {
+describe('tomlify.toValue(value, null)', function () {
 
   [ [true,                    'true']
   , [false,                   'false']
@@ -74,7 +74,7 @@ describe('tomlify.toValue(value, null, null)', function () {
   , [3.14e30,                 '3.14e+30']
   , [new Date(1429529944532), '2015-04-20T11:39:04.532Z']
   , [{},                      '{}']
-  , [{one: 1, $wo: '2'},      '{one = 1.0, "$wo" = "2"}']
+  , [{$wo: ['2']},            '{"$wo" = ["2"]}']
   , [[],                      '[]']
   , [[null, undefined,,,],    '[]']
   , [[[], []],                '[[], []]']
@@ -90,7 +90,23 @@ describe('tomlify.toValue(value, null, null)', function () {
 });
 
 
-describe('tomlify(value, null, space)', function () {
+describe('tomlify.toValue(value, {sort})', function () {
+
+  [ [{a: 3, b: 2, c: 1},      '{a = 3.0, b = 2.0, c = 1.0}']
+  , [{c: 1, a: 3, b: 2},      '{a = 3.0, b = 2.0, c = 1.0}']
+  , [{c: 1, b: 2, a: 3},      '{a = 3.0, b = 2.0, c = 1.0}']
+  ].forEach(function (data, i) {
+    it('#' + (i + 1), function () {
+      should(tomlify.toValue(data[0], {
+        sort: function (a, b) { return a <= b ? -1 : 1; }
+      })).eql(data[1]);
+    });
+  });
+
+});
+
+
+describe('tomlify.toValue(value, {space})', function () {
 
   var lineno = 0;
   var snippets = fs.readFileSync(__dirname + '/fixtures/snippets-values.txt', {
@@ -109,14 +125,14 @@ describe('tomlify(value, null, space)', function () {
       var TOMLse = 'TOML[' + lineno + ':0-' + (lineno + TOMLlg) + ':0]';
       lineno += TOMLlg;
       it('#' + (i + 1) + ' ' + YAMLse + ' ' + TOMLse, function () {
-        should(tomlify(yaml.safeLoad(data[0]), null, 2)).equal(data[1]);
+        should(tomlify.toValue(yaml.safeLoad(data[0]), {space: 2})).equal(data[1]);
       });
     });
 
 });
 
 
-describe('tomlify(table, null, space)', function () {
+describe('tomlify.toToml(table, {space})', function () {
 
   var lineno = 0;
   var snippets = fs.readFileSync(__dirname + '/fixtures/snippets-tables.txt', {
@@ -135,7 +151,7 @@ describe('tomlify(table, null, space)', function () {
       var TOMLse = 'TOML[' + lineno + ':0-' + (lineno + TOMLlg) + ':0]';
       lineno += TOMLlg;
       it('#' + (i + 1) + ' ' + YAMLse + ' ' + TOMLse, function () {
-        var tableA = toml.parse(tomlify(yaml.safeLoad(data[0]), null, '\t'));
+        var tableA = toml.parse(tomlify.toToml(yaml.safeLoad(data[0]), {space: '\t'}));
         var tableB = toml.parse(data[1]);
         should(tableA).eql(tableB);
       });
@@ -144,7 +160,7 @@ describe('tomlify(table, null, space)', function () {
 });
 
 
-describe('tomlify(table, replacer, space)', function () {
+describe('tomlify.toToml(table, {replace, space})', function () {
 
   var replace = function (key, value) {
     var context = this;
@@ -161,7 +177,7 @@ describe('tomlify(table, replacer, space)', function () {
     } else if (/^todosx\.\[\d\]$/.test(tomlify.toKey(context.path))) {
       return '"done"';
     } else if (/^todosy$/.test(tomlify.toKey(context.path))) {
-      return tomlify.toValue(value, null, 2);
+      return tomlify.toValue(value, {space: 2});
     } else if (value == null) {
       return 'false';
     }
@@ -184,7 +200,10 @@ describe('tomlify(table, replacer, space)', function () {
       var TOMLse = 'TOML[' + lineno + ':0-' + (lineno + TOMLlg) + ':0]';
       lineno += TOMLlg;
       it('#' + (i + 1) + ' ' + YAMLse + ' ' + TOMLse, function () {
-        var tableA = toml.parse(tomlify(yaml.safeLoad(data[0]), replace, '\t'));
+        var tableA = toml.parse(tomlify.toToml(yaml.safeLoad(data[0]), {
+          replace: replace,
+          space: '\t'
+        }));
         var tableB = toml.parse(data[1]);
         should(tableA).eql(tableB);
       });
