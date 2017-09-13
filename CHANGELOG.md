@@ -1,3 +1,9 @@
+### v3.0.0
+
+* New API interface: `tomlify.toToml(obj, opts)`, `tomlify.toValue(obj, opts)`.
+  `tomlify` is no longer a function. (incompatible changes)
+* New option `sort` to specify a compare function for sorting table keys.
+
 ### v2.1.1
 
 * New API `tomlify.toToml()`.
