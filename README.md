@@ -53,7 +53,7 @@ var table = {
 };
 
 try {
-    var text = tomlify(table, null, 2);  // indent with 2 spaces
+    var text = tomlify.toToml(table, {space: 2});  // indent with 2 spaces
     /* OUTPUT:
      * [about]
      * name = "tomlify-j0.4"
@@ -79,19 +79,22 @@ try {
      * ]
      * date = 2017-04-13T16:08:00.000Z
      */
-    var text = tomlify(table, function (key, value) {
-        var context = this;
-        var path = tomlify.toKey(context.path);
-        if (/^more\.version\.\[\d+\]$/.test(path)) {
-            return value.toFixed(0);  // Change the text transformed from the value.
+    var text = tomlify.toToml(table, {
+        space: '  ',
+        replace: function (key, value) {
+            var context = this;
+            var path = tomlify.toKey(context.path);
+            if (/^more\.version\.\[\d+\]$/.test(path)) {
+                return value.toFixed(0);  // Change the text transformed from the value.
+            }
+            if (context.path[0] === 'about' &&
+                context.path[1] === 'todos' &&
+                context.path[2] === 1) {
+                return null;  // Drop one table from the todo array.
+            }
+            return false;  // Let tomlify decide for you.
         }
-        if (context.path[0] === 'about' &&
-            context.path[1] === 'todos' &&
-            context.path[2] === 1) {
-            return null;  // Drop one table from the todo array.
-        }
-        return false;  // Let tomlify decide for you.
-    }, '  ');
+    });
     /* OUTPUT:
      * [about]
      * name = "tomlify-j0.4"
@@ -112,7 +115,7 @@ try {
      * ]
      * date = 2017-04-13T16:08:00.000Z
      */
-    var text = tomlify({
+    var text = tomlify.toToml({
         null: null,
         undefined: undefined,
         numbers: [1, 2, null, , 3, 4]
@@ -128,22 +131,20 @@ try {
 
 ### APIs
 
-#### tomlify(table, replacer, space)
+#### tomlify.toToml(table, options)
 
 Use it to transform a table object into TOML text.
 
-*   table - `{Object}`: The object to be transformed.
+*   `table`: must be an object other than an instance of Array or Date.
 
-    It can be any JavaScript object, except for `null` and `undefined`. By
-    default, all numbers are transformed into floats and arrays of numbers will
-    become arrays of floats. And `null` or `undefined` in an array or object
-    property whose value is `null` or `undefined` will be ignored. You can
-    change this behavior through `replacer`.
+    By default, all numbers are transformed into floats and arrays of numbers
+    will become arrays of floats. And `null` or `undefined` in an array or
+    object property whose value is `null` or `undefined` will be ignored. You
+    can change this behavior through `options.replace`.
 
-    If `table` is a boolean value, a number, a string, a date or an array, the
-    result will be the same as `tomlify.toValue(table, replacer, space)`.
+*   options.replace - `{function(this: Context, key: String|Number, value:Mixed): Mixed}`:
 
-*   replacer - `{function(this: Context, key: String|Number, value:Mixed): Mixed}`:
+    The function used to change the default text output.
 
     *   `@this {Context}`:
         *   `@property {Array.<String|Number>}` path: The key path to current value.
@@ -153,21 +154,24 @@ Use it to transform a table object into TOML text.
     *   `@return {Mixed}` A string to change the value output, `false` to
         cancel, `null` or `undefined` to remove the output.
 
-*   space - `{String|Number}`: Specify the padding string for indentation.
+*   options.space - `{String|Number}`:
+
+    Specify the padding string for indentation.
 
     If it is a non-negative integer N, then use N space " " for indentation. If
     it is a string, then use this string for indentation. Otherwise, no
     indentation will be performed.
 
-#### tomlify.toToml(value, replacer, space)
+*   options.sort - `{function(a: String, b: String): Number}`:
 
-The same as `tomlify(table, replacer, space)`, except that `value` must be an
-object other than an instance of Array or Date.
+    The compare function for sorting table keys.
 
-#### tomlify.toValue(value, replacer, space)
+    It is used for `Array.prototype.sort()`.
 
-Just like `tomlify(table, replacer, space)`, it is used to transform a value
-into TOML value for a key-value pair. `value` cannot be null or undefined.
+#### tomlify.toValue(value, options)
+
+Just like `tomlify.toToml(table, options)`, it is used to transform a value into TOML
+value for a key-value pair. `value` cannot be null or undefined.
 
 However, an inline-table always fits into one line, no matter what it contains.
 
@@ -177,7 +181,7 @@ E.g.
 tomlify.toValue({one: 1, two: 2});
 //=> {one = 1.0, two = 2.0}
 
-tomlify.toValue(["apple", "banana"], null, 2);
+tomlify.toValue(["apple", "banana"], {space: 2});
 //=>
 //[
 //  "apple",
@@ -187,7 +191,7 @@ tomlify.toValue(["apple", "banana"], null, 2);
 tomlify.toValue([
   {people: ["Alice", "Bob"]},
   {fruits: ["apple", "banana"]}
-], null, 2);
+], {space: 2});
 //=>
 //[
 //  {people = ["Alice", "Bob"]},
