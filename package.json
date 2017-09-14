@@ -1,6 +1,6 @@
 {
   "name": "tomlify-j0.4",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "A Object->TOML encoder/converter only for TOML v0.4.0",
   "main": "tomlify.js",
   "types": "tomlify.d.ts",
@@ -9,6 +9,14 @@
     "prepare": "npm run dist",
     "test": "mocha --bail --reporter min test/*.js"
   },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md",
+    "dist/tomlify.min.js",
+    "tomlify.d.ts",
+    "tomlify.js"
+  ],
   "keywords": [
     "toml",
     "tomlify",
