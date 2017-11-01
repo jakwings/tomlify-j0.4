@@ -3,6 +3,7 @@
 * New API interface: `tomlify.toToml(obj, opts)`, `tomlify.toValue(obj, opts)`.
   `tomlify` is no longer a function. (incompatible changes)
 * New option `sort` to specify a compare function for sorting table keys.
+  `sort` can be any function that can be used in `Array.sort(array, sort)`.
 
 ### v2.1.1
 
